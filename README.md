@@ -4,4 +4,4 @@ This repository contains the **Spring Boot backend** for the note-taking applica
 
 It provides the REST API and handles data persistence.
 
-**Frontend:** []
+**Frontend:** [https://github.com/mohamadbachrouche/webtech-note-app-fe]
