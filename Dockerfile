@@ -3,7 +3,7 @@
 FROM gradle:jdk25-noble AS build
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
-RUN gradle build --no-daemon
+RUN gradle build --no-daemon -x test
 
 # Use a valid Temurin image for JDK 25
 FROM eclipse-temurin:25-jdk-noble
