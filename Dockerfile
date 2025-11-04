@@ -4,7 +4,7 @@ WORKDIR /workspace
 
 # Copy Gradle wrapper and build files first to leverage Docker layer caching
 COPY gradlew gradlew
-COPY gradle gradle
+COPY gradle/wrapper gradle/wrapper
 COPY build.gradle settings.gradle ./
 
 # Run a simple Gradle command to download the wrapper
