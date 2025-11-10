@@ -4,7 +4,7 @@ import de.htw.webtech.domain.Note;
 import de.htw.webtech.repository.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime; // Import this
+import java.time.LocalDateTime;
 
 @Service
 public class NoteService {
@@ -13,7 +13,6 @@ public class NoteService {
     private NoteRepository repository;
 
     public Note save(Note note) {
-        // Set creation/modification times
         if (note.getId() == null) {
             note.setCreatedAt(LocalDateTime.now());
         }
@@ -25,8 +24,16 @@ public class NoteService {
         return repository.findById(id).orElse(null);
     }
 
+    // --- MODIFIED ---
+    // Only get notes that are NOT in the trash
     public Iterable<Note> getAll() {
-        return repository.findAll();
+        return repository.findAllByInTrashFalse();
+    }
+
+    // --- NEW ---
+    // Get only notes that ARE in the trash
+    public Iterable<Note> getAllTrashed() {
+        return repository.findAllByInTrashTrue();
     }
 
     public Note update(Long id, Note updatedNote) {
@@ -43,7 +50,33 @@ public class NoteService {
         return null;
     }
 
-    public void delete(Long id) {
+    // --- MODIFIED ---
+    // This no longer permanently deletes. It just sets the flag.
+    public Note moveToTrash(Long id) {
+        Note note = repository.findById(id).orElse(null);
+        if (note != null) {
+            note.setInTrash(true);
+            note.setPinned(false); // Can't be pinned and in trash
+            note.setLastModified(LocalDateTime.now());
+            return repository.save(note);
+        }
+        return null;
+    }
+
+    // --- NEW ---
+    public Note restoreFromTrash(Long id) {
+        Note note = repository.findById(id).orElse(null);
+        if (note != null) {
+            note.setInTrash(false);
+            note.setLastModified(LocalDateTime.now());
+            return repository.save(note);
+        }
+        return null;
+    }
+
+    // --- NEW (was the old delete) ---
+    // This is now for permanent deletion
+    public void deletePermanently(Long id) {
         repository.deleteById(id);
     }
 }
