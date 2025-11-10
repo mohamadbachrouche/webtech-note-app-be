@@ -1,0 +1,39 @@
+### 1. (M4 Requirement) Create a new note (POST)
+POST http://localhost:8080/api/notes
+Content-Type: application/json
+
+{
+  "title": "Test Note Title",
+  "content": "This is the content for my test note.",
+  "tags": "test, java",
+  "pinned": false,
+  "inTrash": false
+}
+
+### 2. Get all notes (GET)
+GET http://localhost:8080/api/notes
+Accept: application/json
+
+### 3. Get a single note (GET by ID)
+# Note: You must run the POST request first to get an ID.
+# Change the '1' to match the ID you get back.
+GET http://localhost:8080/api/notes/1
+Accept: application/json
+
+### 4. Update a note (PUT)
+# Note: Change the '1' to match the ID you want to update.
+PUT http://localhost:8080/api/notes/1
+Content-Type: application/json
+
+{
+  "title": "UPDATED Note Title",
+  "content": "The content has been updated.",
+  "tags": "test, updated",
+  "pinned": true,
+  "inTrash": false
+}
+
+### 5. Delete a note (DELETE)
+# Note: Change the '1' to match the ID you want to delete.
+DELETE http://localhost:8080/api/notes/1
+Accept: application/json
