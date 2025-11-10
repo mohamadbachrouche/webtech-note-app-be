@@ -16,13 +16,10 @@ public class Note {
     private String content;
 
     private LocalDateTime createdAt;
-
-    // --- NEW FIELDS TO ADD ---
     private LocalDateTime lastModified;
     private boolean pinned;
     private boolean inTrash;
-    private String tags; // Stored as comma-separated string
-    // -------------------------
+    private String tags; // Comma-separated string
 
     // No-argument constructor (required by JPA)
     public Note() {
@@ -33,7 +30,7 @@ public class Note {
     }
 
     // --- GETTERS AND SETTERS ---
-    // (IntelliJ can generate these for you)
+    // These are required for Spring/Jackson to create the object
 
     public Long getId() {
         return id;
