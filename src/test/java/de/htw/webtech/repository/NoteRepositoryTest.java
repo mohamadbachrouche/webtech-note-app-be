@@ -32,9 +32,8 @@ class NoteRepositoryTest {
         Iterable<Note> result = repository.findAllByInTrashFalse();
 
         // 3. Assert: We should only find the 1 active note
-        int count = 0;
-        for (Note n : result) count++;
-        assertEquals(1, count);
+        List<Note> notes = (List<Note>) result;
+        assertEquals(1, notes.size());
     }
 
     @Test
@@ -54,8 +53,7 @@ class NoteRepositoryTest {
         Iterable<Note> result = repository.findAllByInTrashTrue();
 
         // 3. Assert: We should only find the 1 trashed note
-        int count = 0;
-        for (Note n : result) count++;
-        assertEquals(1, count);
+        List<Note> notes = (List<Note>) result;
+        assertEquals(1, notes.size());
     }
 }
