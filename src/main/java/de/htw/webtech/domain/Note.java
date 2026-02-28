@@ -1,5 +1,6 @@
 package de.htw.webtech.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
@@ -22,6 +23,11 @@ public class Note {
     private boolean pinned;
     private boolean inTrash;
     private String tags; // Comma-separated string
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser user;
 
     // No-argument constructor (required by JPA)
     public Note() {
@@ -97,4 +103,7 @@ public class Note {
     public void setTags(String tags) {
         this.tags = tags;
     }
+
+    public AppUser getUser() { return user; }
+    public void setUser(AppUser user) { this.user = user; }
 }

@@ -1,19 +1,33 @@
 package de.htw.webtech.service;
 
+import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
 import de.htw.webtech.exception.NoteNotFoundException;
 import de.htw.webtech.repository.NoteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import de.htw.webtech.repository.UserRepository;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 
 @Service
 public class NoteService {
 
-    @Autowired
-    private NoteRepository repository;
+    private final NoteRepository repository;
+    private final UserRepository userRepository;
 
-    public Note save(Note note) {
+    public NoteService(NoteRepository repository, UserRepository userRepository) {
+        this.repository = repository;
+        this.userRepository = userRepository;
+    }
+
+    private AppUser getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+    }
+
+    public Note save(Note note, Long userId) {
+        AppUser user = getUser(userId);
+        note.setUser(user);
         if (note.getId() == null) {
             note.setCreatedAt(LocalDateTime.now());
         }
@@ -21,25 +35,21 @@ public class NoteService {
         return repository.save(note);
     }
 
-    public Note get(Long id) {
-        return repository.findById(id)
+    public Note get(Long id, Long userId) {
+        return repository.findByIdAndUser(id, getUser(userId))
                 .orElseThrow(() -> new NoteNotFoundException(id));
     }
 
-    // --- MODIFIED ---
-    // Only get notes that are NOT in the trash
-    public Iterable<Note> getAll() {
-        return repository.findAllByInTrashFalse();
+    public Iterable<Note> getAll(Long userId) {
+        return repository.findAllByUserAndInTrashFalse(getUser(userId));
     }
 
-    // --- NEW ---
-    // Get only notes that ARE in the trash
-    public Iterable<Note> getAllTrashed() {
-        return repository.findAllByInTrashTrue();
+    public Iterable<Note> getAllTrashed(Long userId) {
+        return repository.findAllByUserAndInTrashTrue(getUser(userId));
     }
 
-    public Note update(Long id, Note updatedNote) {
-        Note existingNote = repository.findById(id)
+    public Note update(Long id, Note updatedNote, Long userId) {
+        Note existingNote = repository.findByIdAndUser(id, getUser(userId))
                 .orElseThrow(() -> new NoteNotFoundException(id));
 
         existingNote.setTitle(updatedNote.getTitle());
@@ -51,10 +61,8 @@ public class NoteService {
         return repository.save(existingNote);
     }
 
-    // --- MODIFIED ---
-    // This no longer permanently deletes. It just sets the flag.
-    public Note moveToTrash(Long id) {
-        Note note = repository.findById(id)
+    public Note moveToTrash(Long id, Long userId) {
+        Note note = repository.findByIdAndUser(id, getUser(userId))
                 .orElseThrow(() -> new NoteNotFoundException(id));
 
         note.setInTrash(true);
@@ -63,9 +71,8 @@ public class NoteService {
         return repository.save(note);
     }
 
-    // --- NEW ---
-    public Note restoreFromTrash(Long id) {
-        Note note = repository.findById(id)
+    public Note restoreFromTrash(Long id, Long userId) {
+        Note note = repository.findByIdAndUser(id, getUser(userId))
                 .orElseThrow(() -> new NoteNotFoundException(id));
 
         note.setInTrash(false);
@@ -73,9 +80,9 @@ public class NoteService {
         return repository.save(note);
     }
 
-    // --- NEW (was the old delete) ---
-    // This is now for permanent deletion
-    public void deletePermanently(Long id) {
-        repository.deleteById(id);
+    public void deletePermanently(Long id, Long userId) {
+        Note note = repository.findByIdAndUser(id, getUser(userId))
+                .orElseThrow(() -> new NoteNotFoundException(id));
+        repository.delete(note);
     }
 }

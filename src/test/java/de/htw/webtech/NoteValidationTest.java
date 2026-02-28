@@ -1,16 +1,22 @@
 package de.htw.webtech;
 
+import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
+import de.htw.webtech.security.JwtService;
 import de.htw.webtech.service.NoteService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -25,10 +31,24 @@ class NoteValidationTest {
     @MockitoBean
     private NoteService service;
 
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UserDetailsService userDetailsService;
+
+    private AppUser mockUser() {
+        AppUser appUser = new AppUser();
+        appUser.setId(1L);
+        appUser.setEmail("test@test.com");
+        appUser.setPassword("hashed");
+        return appUser;
+    }
+
     @Test
     void shouldRejectNoteWithBlankTitle() throws Exception {
-        // Attempt to create a note with blank title
         mockMvc.perform(post("/api/notes")
+                .with(user(mockUser())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\": \"\", \"content\": \"Some content\"}"))
                 .andExpect(status().isBadRequest());
@@ -36,8 +56,8 @@ class NoteValidationTest {
 
     @Test
     void shouldRejectNoteWithNullTitle() throws Exception {
-        // Attempt to create a note without title field
         mockMvc.perform(post("/api/notes")
+                .with(user(mockUser())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"content\": \"Some content\"}"))
                 .andExpect(status().isBadRequest());
@@ -49,9 +69,10 @@ class NoteValidationTest {
         note.setTitle("Valid Title");
         note.setContent("Valid Content");
 
-        when(service.save(any(Note.class))).thenReturn(note);
+        when(service.save(any(Note.class), anyLong())).thenReturn(note);
 
         mockMvc.perform(post("/api/notes")
+                .with(user(mockUser())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\": \"Valid Title\", \"content\": \"Valid Content\"}"))
                 .andExpect(status().isOk())
@@ -60,8 +81,8 @@ class NoteValidationTest {
 
     @Test
     void shouldRejectUpdateWithBlankTitle() throws Exception {
-        // Attempt to update a note with blank title
         mockMvc.perform(put("/api/notes/1")
+                .with(user(mockUser())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\": \"\", \"content\": \"Updated content\"}"))
                 .andExpect(status().isBadRequest());
@@ -69,8 +90,8 @@ class NoteValidationTest {
 
     @Test
     void shouldRejectNoteWithOnlyWhitespaceTitle() throws Exception {
-        // Attempt to create a note with only whitespace in title
         mockMvc.perform(post("/api/notes")
+                .with(user(mockUser())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\": \"   \", \"content\": \"Some content\"}"))
                 .andExpect(status().isBadRequest());
