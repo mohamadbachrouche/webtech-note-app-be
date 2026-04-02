@@ -2,8 +2,11 @@ package de.htw.webtech;
 
 import de.htw.webtech.domain.Note;
 import de.htw.webtech.service.NoteService;
+import de.htw.webtech.service.PdfService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +16,9 @@ public class NoteController {
 
     @Autowired
     private NoteService service;
+
+    @Autowired
+    private PdfService pdfService;
 
     @GetMapping
     public ResponseEntity<Iterable<Note>> getAllNotes() {
@@ -41,6 +47,20 @@ public class NoteController {
     public ResponseEntity<Note> updateNote(@PathVariable Long id, @Valid @RequestBody Note note) {
         Note updatedNote = service.update(id, note);
         return ResponseEntity.ok(updatedNote);
+    }
+
+    @GetMapping("/{id}/download/pdf")
+    public ResponseEntity<byte[]> downloadNoteAsPdf(@PathVariable Long id) {
+        Note note = service.get(id);
+        byte[] pdfBytes = pdfService.generatePdf(note);
+        String filename = pdfService.sanitizeFilename(note.getTitle()) + ".pdf";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", filename);
+        headers.setContentLength(pdfBytes.length);
+
+        return ResponseEntity.ok().headers(headers).body(pdfBytes);
     }
 
     // --- MODIFIED: This is now for MOVING to trash ---

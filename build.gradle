@@ -29,6 +29,8 @@ dependencies {
     implementation 'org.postgresql:postgresql'
     // This adds the H2 in-memory database for local development/testing
     runtimeOnly 'com.h2database:h2'
+    implementation 'com.github.librepdf:openpdf:2.0.3'
+    implementation 'org.jsoup:jsoup:1.18.3'
 }
 
 tasks.named('test') {
