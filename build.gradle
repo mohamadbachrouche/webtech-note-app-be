@@ -11,7 +11,7 @@ description = 'Web Tech Note App'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(25)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -29,6 +29,9 @@ dependencies {
     implementation 'org.postgresql:postgresql'
     // This adds the H2 in-memory database for local development/testing
     runtimeOnly 'com.h2database:h2'
+    // PDF generation: Flying Saucer renders XHTML+CSS → PDF via OpenPDF; Jsoup normalizes HTML to XHTML
+    implementation 'org.xhtmlrenderer:flying-saucer-pdf-openpdf:9.4.0'
+    implementation 'org.jsoup:jsoup:1.22.1'
 }
 
 tasks.named('test') {

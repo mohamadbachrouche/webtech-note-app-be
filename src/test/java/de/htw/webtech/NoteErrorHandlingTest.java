@@ -3,6 +3,7 @@ package de.htw.webtech;
 import de.htw.webtech.domain.Note;
 import de.htw.webtech.exception.NoteNotFoundException;
 import de.htw.webtech.service.NoteService;
+import de.htw.webtech.service.PdfService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -23,6 +24,9 @@ class NoteErrorHandlingTest {
 
     @MockitoBean
     private NoteService service;
+
+    @MockitoBean
+    private PdfService pdfService;
 
     @Test
     void shouldReturn404WhenNoteNotFound() throws Exception {

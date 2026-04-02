@@ -2,8 +2,10 @@ package de.htw.webtech;
 
 import de.htw.webtech.domain.Note;
 import de.htw.webtech.service.NoteService;
+import de.htw.webtech.service.PdfService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +15,9 @@ public class NoteController {
 
     @Autowired
     private NoteService service;
+
+    @Autowired
+    private PdfService pdfService;
 
     @GetMapping
     public ResponseEntity<Iterable<Note>> getAllNotes() {
@@ -55,6 +60,17 @@ public class NoteController {
     public ResponseEntity<Note> restoreFromTrash(@PathVariable Long id) {
         Note restoredNote = service.restoreFromTrash(id);
         return ResponseEntity.ok(restoredNote);
+    }
+
+    @GetMapping("/{id}/download/pdf")
+    public ResponseEntity<byte[]> downloadNotePdf(@PathVariable Long id) {
+        Note note = service.get(id);
+        byte[] pdf = pdfService.generatePdf(note);
+        String filename = PdfService.sanitizeFilename(note.getTitle()) + ".pdf";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "application/pdf")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .body(pdf);
     }
 
     // --- NEW: This is for PERMANENT delete ---

@@ -2,10 +2,12 @@ package de.htw.webtech;
 
 import de.htw.webtech.domain.Note;
 import de.htw.webtech.service.NoteService;
+import de.htw.webtech.service.PdfService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -16,6 +18,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,6 +30,9 @@ class NoteControllerTest {
 
     @MockitoBean
     private NoteService service;
+
+    @MockitoBean
+    private PdfService pdfService;
 
     @Test
     void shouldReturnAllNotes() throws Exception {
@@ -99,6 +105,21 @@ class NoteControllerTest {
         mockMvc.perform(put("/api/notes/trash/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.inTrash").value(true));
+    }
+
+    @Test
+    void shouldDownloadNotePdf() throws Exception {
+        Note note = new Note();
+        note.setTitle("My Note");
+        note.setContent("<p>Hello</p>");
+
+        when(service.get(1L)).thenReturn(note);
+        when(pdfService.generatePdf(note)).thenReturn(new byte[]{1, 2, 3});
+
+        mockMvc.perform(get("/api/notes/1/download/pdf"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "application/pdf"))
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"My_Note.pdf\""));
     }
 
     @Test
