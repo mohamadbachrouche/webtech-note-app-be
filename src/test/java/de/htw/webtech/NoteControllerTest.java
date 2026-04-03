@@ -76,27 +76,31 @@ class NoteControllerTest {
     void shouldReturnNoteById() throws Exception {
         Note note = new Note();
         note.setTitle("My Note");
+        note.setColor("#33aaff");
 
         when(service.get(eq(42L), anyLong())).thenReturn(note);
 
         mockMvc.perform(get("/api/notes/42").with(user(mockUser())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("My Note"));
+                .andExpect(jsonPath("$.title").value("My Note"))
+                .andExpect(jsonPath("$.color").value("#33aaff"));
     }
 
     @Test
     void shouldCreateNote() throws Exception {
         Note note = new Note();
         note.setTitle("New Note");
+        note.setColor("#55cc55");
 
         when(service.save(any(Note.class), anyLong())).thenReturn(note);
 
         mockMvc.perform(post("/api/notes")
                         .with(user(mockUser())).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\": \"New Note\", \"content\": \"Content\"}"))
+                        .content("{\"title\": \"New Note\", \"content\": \"Content\", \"color\": \"#55cc55\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("New Note"));
+                .andExpect(jsonPath("$.title").value("New Note"))
+                .andExpect(jsonPath("$.color").value("#55cc55"));
     }
 
     @Test
@@ -104,15 +108,17 @@ class NoteControllerTest {
         Note updatedNote = new Note();
         updatedNote.setId(1L);
         updatedNote.setTitle("Updated Title");
+        updatedNote.setColor("#ff5544");
 
         when(service.update(eq(1L), any(Note.class), anyLong())).thenReturn(updatedNote);
 
         mockMvc.perform(put("/api/notes/1")
                         .with(user(mockUser())).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\": \"Updated Title\", \"content\": \"New content\"}"))
+                        .content("{\"title\": \"Updated Title\", \"content\": \"New content\", \"color\": \"#ff5544\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Updated Title"));
+                .andExpect(jsonPath("$.title").value("Updated Title"))
+                .andExpect(jsonPath("$.color").value("#ff5544"));
     }
 
     @Test

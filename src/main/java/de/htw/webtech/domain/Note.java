@@ -29,6 +29,8 @@ public class Note {
     private boolean pinned;
     private boolean inTrash;
     private String tags; // Comma-separated string
+    @Column(nullable = true)
+    private String color = "";
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -106,6 +108,14 @@ public class Note {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public String getColor() {
+        return color == null ? "" : color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     public AppUser getUser() { return user; }

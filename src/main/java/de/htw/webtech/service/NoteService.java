@@ -25,6 +25,9 @@ public class NoteService {
 
     public Note save(Note note, Long userId) {
         AppUser user = getUser(userId);
+        if (note.getColor() == null) {
+            note.setColor("");
+        }
         note.setUser(user);
         return repository.save(note);
     }
@@ -49,6 +52,7 @@ public class NoteService {
         existingNote.setTitle(updatedNote.getTitle());
         existingNote.setContent(updatedNote.getContent());
         existingNote.setTags(updatedNote.getTags());
+        existingNote.setColor(updatedNote.getColor() == null ? "" : updatedNote.getColor());
         existingNote.setPinned(updatedNote.isPinned());
         existingNote.setInTrash(updatedNote.isInTrash());
         return repository.save(existingNote);

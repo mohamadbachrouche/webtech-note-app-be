@@ -124,4 +124,27 @@ class NoteRepositoryTest {
         List<Note> notes = (List<Note>) result;
         assertEquals(1, notes.size());
     }
+
+    @Test
+    void shouldPersistColorAcrossCreateUpdateAndFetch() {
+        Note note = new Note();
+        note.setTitle("Color Test");
+        note.setColor("#22cc88");
+        note.setUser(testUser);
+
+        Note created = repository.save(note);
+        entityManager.flush();
+        entityManager.clear();
+
+        Note afterCreate = repository.findByIdAndUser(created.getId(), testUser).orElseThrow();
+        assertEquals("#22cc88", afterCreate.getColor());
+
+        afterCreate.setColor("#ff9900");
+        repository.save(afterCreate);
+        entityManager.flush();
+        entityManager.clear();
+
+        Note afterUpdate = repository.findByIdAndUser(created.getId(), testUser).orElseThrow();
+        assertEquals("#ff9900", afterUpdate.getColor());
+    }
 }
