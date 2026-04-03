@@ -47,6 +47,9 @@ A **Spring Boot REST API** for a modern note-taking application, developed for t
 git clone https://github.com/mohamadbachrouche/webtech-note-app-be.git
 cd webtech-note-app-be
 
+# Export required environment variables
+export JWT_SECRET="replace-with-a-random-32-plus-character-secret"
+
 # Run with Gradle (requires Java 25)
 ./gradlew bootRun
 
@@ -54,7 +57,7 @@ cd webtech-note-app-be
 ./gradlew test
 ```
 
-> **Note:** Set the `JDBC_DATABASE_URL` environment variable for database connection.
+> **Note:** Set `JWT_SECRET` in every environment. Set `JDBC_DATABASE_URL` when running against PostgreSQL.
 
 ## 📦 Related Repositories
 
