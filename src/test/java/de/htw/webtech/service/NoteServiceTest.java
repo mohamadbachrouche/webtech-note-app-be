@@ -1,10 +1,12 @@
 package de.htw.webtech.service;
 
+import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
 import de.htw.webtech.repository.NoteRepository;
+import de.htw.webtech.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -19,20 +21,37 @@ class NoteServiceTest {
     @Mock
     private NoteRepository repository;
 
-    @InjectMocks
+    @Mock
+    private UserRepository userRepository;
+
     private NoteService service;
+
+    private static final Long USER_ID = 1L;
+    private AppUser testUser;
+
+    @BeforeEach
+    void setUp() {
+        service = new NoteService(repository, userRepository);
+
+        testUser = new AppUser();
+        testUser.setId(USER_ID);
+        testUser.setEmail("test@test.com");
+        testUser.setPassword("hashed");
+
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
+    }
 
     @Test
     void shouldSaveNote() {
         Note note = new Note();
         note.setTitle("Test Note");
 
-        // We simulate the repository behavior
         when(repository.save(note)).thenReturn(note);
 
-        Note savedNote = service.save(note);
+        Note savedNote = service.save(note, USER_ID);
 
         assertEquals("Test Note", savedNote.getTitle());
+        assertEquals(testUser, savedNote.getUser());
         verify(repository).save(note);
     }
 
@@ -41,16 +60,15 @@ class NoteServiceTest {
         Long id = 1L;
         Note note = new Note();
         note.setId(id);
+        note.setUser(testUser);
         note.setPinned(true);
         note.setInTrash(false);
 
-        when(repository.findById(id)).thenReturn(Optional.of(note));
-        // Return the note that is passed to save()
+        when(repository.findByIdAndUser(id, testUser)).thenReturn(Optional.of(note));
         when(repository.save(any(Note.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Note trashedNote = service.moveToTrash(id);
+        Note trashedNote = service.moveToTrash(id, USER_ID);
 
-        // Verify logic: should be in trash and unpinned
         assertTrue(trashedNote.isInTrash());
         assertFalse(trashedNote.isPinned());
         verify(repository).save(note);
@@ -61,12 +79,13 @@ class NoteServiceTest {
         Long id = 1L;
         Note note = new Note();
         note.setId(id);
+        note.setUser(testUser);
         note.setInTrash(true);
 
-        when(repository.findById(id)).thenReturn(Optional.of(note));
+        when(repository.findByIdAndUser(id, testUser)).thenReturn(Optional.of(note));
         when(repository.save(any(Note.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Note restoredNote = service.restoreFromTrash(id);
+        Note restoredNote = service.restoreFromTrash(id, USER_ID);
 
         assertFalse(restoredNote.isInTrash());
         verify(repository).save(note);

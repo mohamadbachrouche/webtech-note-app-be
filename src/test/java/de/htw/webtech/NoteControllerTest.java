@@ -1,20 +1,26 @@
 package de.htw.webtech;
 
+import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
+import de.htw.webtech.security.JwtService;
 import de.htw.webtech.service.NoteService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,6 +34,22 @@ class NoteControllerTest {
     @MockitoBean
     private NoteService service;
 
+    // Required by JwtAuthenticationFilter (loaded as a Filter bean in WebMvcTest)
+    @MockitoBean
+    private JwtService jwtService;
+
+    // Required by SecurityConfig's DaoAuthenticationProvider
+    @MockitoBean
+    private UserDetailsService userDetailsService;
+
+    private AppUser mockUser() {
+        AppUser appUser = new AppUser();
+        appUser.setId(1L);
+        appUser.setEmail("test@test.com");
+        appUser.setPassword("hashed");
+        return appUser;
+    }
+
     @Test
     void shouldReturnAllNotes() throws Exception {
         Note note1 = new Note();
@@ -38,9 +60,9 @@ class NoteControllerTest {
         note2.setTitle("Note 2");
         note2.setInTrash(false);
 
-        when(service.getAll()).thenReturn(List.of(note1, note2));
+        when(service.getAll(anyLong())).thenReturn(List.of(note1, note2));
 
-        mockMvc.perform(get("/api/notes"))
+        mockMvc.perform(get("/api/notes").with(user(mockUser())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].title").value("Note 1"));
@@ -51,9 +73,9 @@ class NoteControllerTest {
         Note note = new Note();
         note.setTitle("My Note");
 
-        when(service.get(42L)).thenReturn(note);
+        when(service.get(eq(42L), anyLong())).thenReturn(note);
 
-        mockMvc.perform(get("/api/notes/42"))
+        mockMvc.perform(get("/api/notes/42").with(user(mockUser())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("My Note"));
     }
@@ -63,9 +85,10 @@ class NoteControllerTest {
         Note note = new Note();
         note.setTitle("New Note");
 
-        when(service.save(any(Note.class))).thenReturn(note);
+        when(service.save(any(Note.class), anyLong())).thenReturn(note);
 
         mockMvc.perform(post("/api/notes")
+                        .with(user(mockUser())).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\": \"New Note\", \"content\": \"Content\"}"))
                 .andExpect(status().isOk())
@@ -78,10 +101,10 @@ class NoteControllerTest {
         updatedNote.setId(1L);
         updatedNote.setTitle("Updated Title");
 
-        // When service.update is called with ID 1 and ANY note object, return updatedNote
-        when(service.update(eq(1L), any(Note.class))).thenReturn(updatedNote);
+        when(service.update(eq(1L), any(Note.class), anyLong())).thenReturn(updatedNote);
 
         mockMvc.perform(put("/api/notes/1")
+                        .with(user(mockUser())).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\": \"Updated Title\", \"content\": \"New content\"}"))
                 .andExpect(status().isOk())
@@ -94,19 +117,18 @@ class NoteControllerTest {
         trashNote.setId(1L);
         trashNote.setInTrash(true);
 
-        when(service.moveToTrash(1L)).thenReturn(trashNote);
+        when(service.moveToTrash(eq(1L), anyLong())).thenReturn(trashNote);
 
-        mockMvc.perform(put("/api/notes/trash/1"))
+        mockMvc.perform(put("/api/notes/trash/1").with(user(mockUser())).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.inTrash").value(true));
     }
 
     @Test
     void shouldDeletePermanently() throws Exception {
-        // Since delete is void, we just check status 200
-        mockMvc.perform(delete("/api/notes/permanent/1"))
+        mockMvc.perform(delete("/api/notes/permanent/1").with(user(mockUser())).with(csrf()))
                 .andExpect(status().isOk());
 
-        verify(service).deletePermanently(1L);
+        verify(service).deletePermanently(eq(1L), anyLong());
     }
 }
