@@ -3,7 +3,11 @@ package de.htw.webtech;
 import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
 import de.htw.webtech.service.NoteService;
+import de.htw.webtech.service.PdfService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +29,9 @@ public class NoteController {
         AppUser user = (AppUser) auth.getPrincipal();
         return user.getId();
     }
+
+    @Autowired
+    private PdfService pdfService;
 
     @GetMapping
     public ResponseEntity<Iterable<Note>> getAllNotes() {
@@ -53,6 +60,20 @@ public class NoteController {
                                            @Valid @RequestBody Note note) {
         Note updatedNote = service.update(id, note, getCurrentUserId());
         return ResponseEntity.ok(updatedNote);
+    }
+
+    @GetMapping("/{id}/download/pdf")
+    public ResponseEntity<byte[]> downloadNoteAsPdf(@PathVariable Long id) {
+        Note note = service.get(id, getCurrentUserId());
+        byte[] pdfBytes = pdfService.generatePdf(note);
+        String filename = pdfService.sanitizeFilename(note.getTitle()) + ".pdf";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", filename);
+        headers.setContentLength(pdfBytes.length);
+
+        return ResponseEntity.ok().headers(headers).body(pdfBytes);
     }
 
     // Moving note to trash
