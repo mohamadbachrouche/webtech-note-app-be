@@ -166,7 +166,7 @@ public class PdfService {
     }
 
     private void addList(Document document, Element element, boolean ordered) {
-        List list = new List(ordered);
+        com.lowagie.text.List list = new com.lowagie.text.List(ordered);
         list.setIndentationLeft(15f);
         if (ordered) {
             list.setLettered(false);

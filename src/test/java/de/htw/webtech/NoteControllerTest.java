@@ -4,6 +4,7 @@ import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
 import de.htw.webtech.security.JwtService;
 import de.htw.webtech.service.NoteService;
+import de.htw.webtech.service.PdfService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -33,6 +34,9 @@ class NoteControllerTest {
 
     @MockitoBean
     private NoteService service;
+
+    @MockitoBean
+    private PdfService pdfService;
 
     // Required by JwtAuthenticationFilter (loaded as a Filter bean in WebMvcTest)
     @MockitoBean

@@ -5,6 +5,7 @@ import de.htw.webtech.domain.Note;
 import de.htw.webtech.exception.NoteNotFoundException;
 import de.htw.webtech.security.JwtService;
 import de.htw.webtech.service.NoteService;
+import de.htw.webtech.service.PdfService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,6 +30,9 @@ class NoteErrorHandlingTest {
 
     @MockitoBean
     private NoteService service;
+
+    @MockitoBean
+    private PdfService pdfService;
 
     @MockitoBean
     private JwtService jwtService;
