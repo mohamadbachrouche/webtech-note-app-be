@@ -7,8 +7,6 @@ import de.htw.webtech.repository.NoteRepository;
 import de.htw.webtech.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 @Service
 public class NoteService {
 
@@ -28,10 +26,6 @@ public class NoteService {
     public Note save(Note note, Long userId) {
         AppUser user = getUser(userId);
         note.setUser(user);
-        if (note.getId() == null) {
-            note.setCreatedAt(LocalDateTime.now());
-        }
-        note.setLastModified(LocalDateTime.now());
         return repository.save(note);
     }
 
@@ -57,7 +51,6 @@ public class NoteService {
         existingNote.setTags(updatedNote.getTags());
         existingNote.setPinned(updatedNote.isPinned());
         existingNote.setInTrash(updatedNote.isInTrash());
-        existingNote.setLastModified(LocalDateTime.now());
         return repository.save(existingNote);
     }
 
@@ -67,7 +60,6 @@ public class NoteService {
 
         note.setInTrash(true);
         note.setPinned(false); // Can't be pinned and in trash
-        note.setLastModified(LocalDateTime.now());
         return repository.save(note);
     }
 
@@ -76,7 +68,6 @@ public class NoteService {
                 .orElseThrow(() -> new NoteNotFoundException(id));
 
         note.setInTrash(false);
-        note.setLastModified(LocalDateTime.now());
         return repository.save(note);
     }
 

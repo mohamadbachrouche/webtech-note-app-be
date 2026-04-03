@@ -6,10 +6,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 class NoteRepositoryTest {
@@ -19,6 +21,9 @@ class NoteRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TestEntityManager entityManager;
 
     private AppUser testUser;
 
@@ -51,6 +56,50 @@ class NoteRepositoryTest {
         // 3. Assert: We should only find the 1 active note
         List<Note> notes = (List<Note>) result;
         assertEquals(1, notes.size());
+    }
+
+    @Test
+    void shouldSetTimestampsOnCreate() {
+        Note note = new Note();
+        note.setTitle("Timestamp Test");
+        note.setUser(testUser);
+
+        Note saved = repository.save(note);
+        entityManager.flush();
+
+        assertNotNull(saved.getCreatedAt(), "createdAt should be set on create");
+        assertNotNull(saved.getLastModified(), "lastModified should be set on create");
+    }
+
+    @Test
+    void shouldUpdateLastModifiedAfterUpdate() throws InterruptedException {
+        // Create and persist a note
+        Note note = new Note();
+        note.setTitle("Original Title");
+        note.setUser(testUser);
+        note = repository.save(note);
+        entityManager.flush();
+        entityManager.clear();
+
+        Note saved = repository.findById(note.getId()).orElseThrow();
+        LocalDateTime originalCreatedAt = saved.getCreatedAt();
+        LocalDateTime originalLastModified = saved.getLastModified();
+
+        // Small delay to ensure timestamp differs
+        Thread.sleep(50);
+
+        // Update the note
+        saved.setTitle("Updated Title");
+        repository.save(saved);
+        entityManager.flush();
+        entityManager.clear();
+
+        Note updated = repository.findById(note.getId()).orElseThrow();
+
+        assertEquals(originalCreatedAt, updated.getCreatedAt(),
+                "createdAt should not change after update");
+        assertTrue(updated.getLastModified().isAfter(originalLastModified),
+                "lastModified should be later than original after update");
     }
 
     @Test

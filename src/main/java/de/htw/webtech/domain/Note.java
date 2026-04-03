@@ -3,6 +3,8 @@ package de.htw.webtech.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,7 +20,11 @@ public class Note {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
     private LocalDateTime lastModified;
     private boolean pinned;
     private boolean inTrash;
@@ -31,8 +37,6 @@ public class Note {
 
     // No-argument constructor (required by JPA)
     public Note() {
-        this.createdAt = LocalDateTime.now();
-        this.lastModified = LocalDateTime.now();
         this.pinned = false;
         this.inTrash = false;
     }
