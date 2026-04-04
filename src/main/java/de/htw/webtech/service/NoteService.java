@@ -7,6 +7,10 @@ import de.htw.webtech.repository.NoteRepository;
 import de.htw.webtech.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.StreamSupport;
+
 @Service
 public class NoteService {
 
@@ -27,6 +31,9 @@ public class NoteService {
         AppUser user = getUser(userId);
         if (note.getColor() == null) {
             note.setColor("");
+        }
+        if (note.getTags() == null) {
+            note.setTags("");
         }
         note.setUser(user);
         return repository.save(note);
@@ -51,7 +58,7 @@ public class NoteService {
 
         existingNote.setTitle(updatedNote.getTitle());
         existingNote.setContent(updatedNote.getContent());
-        existingNote.setTags(updatedNote.getTags());
+        existingNote.setTags(updatedNote.getTags() == null ? "" : updatedNote.getTags());
         existingNote.setColor(updatedNote.getColor() == null ? "" : updatedNote.getColor());
         existingNote.setPinned(updatedNote.isPinned());
         existingNote.setInTrash(updatedNote.isInTrash());
@@ -73,6 +80,19 @@ public class NoteService {
 
         note.setInTrash(false);
         return repository.save(note);
+    }
+
+    public List<String> getAllUniqueTags(Long userId) {
+        Iterable<Note> notes = repository.findAllByUserAndInTrashFalse(getUser(userId));
+        return StreamSupport.stream(notes.spliterator(), false)
+                .map(Note::getTags)
+                .filter(tags -> tags != null && !tags.isBlank())
+                .flatMap(tags -> Arrays.stream(tags.split(",")))
+                .map(String::trim)
+                .filter(tag -> !tag.isEmpty())
+                .distinct()
+                .sorted()
+                .toList();
     }
 
     public void deletePermanently(Long id, Long userId) {
