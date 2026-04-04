@@ -122,6 +122,52 @@ class NoteControllerTest {
     }
 
     @Test
+    void shouldCreateNoteWithTags() throws Exception {
+        Note note = new Note();
+        note.setTitle("Tagged Note");
+        note.setTags("work,important");
+
+        when(service.save(any(Note.class), anyLong())).thenReturn(note);
+
+        mockMvc.perform(post("/api/notes")
+                        .with(user(mockUser())).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\": \"Tagged Note\", \"content\": \"Content\", \"tags\": \"work,important\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Tagged Note"))
+                .andExpect(jsonPath("$.tags").value("work,important"));
+    }
+
+    @Test
+    void shouldUpdateNoteWithTags() throws Exception {
+        Note updatedNote = new Note();
+        updatedNote.setId(1L);
+        updatedNote.setTitle("Updated");
+        updatedNote.setTags("personal,urgent");
+
+        when(service.update(eq(1L), any(Note.class), anyLong())).thenReturn(updatedNote);
+
+        mockMvc.perform(put("/api/notes/1")
+                        .with(user(mockUser())).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\": \"Updated\", \"content\": \"Content\", \"tags\": \"personal,urgent\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tags").value("personal,urgent"));
+    }
+
+    @Test
+    void shouldReturnAllUniqueTags() throws Exception {
+        when(service.getAllUniqueTags(anyLong())).thenReturn(List.of("important", "personal", "work"));
+
+        mockMvc.perform(get("/api/notes/tags").with(user(mockUser())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0]").value("important"))
+                .andExpect(jsonPath("$[1]").value("personal"))
+                .andExpect(jsonPath("$[2]").value("work"));
+    }
+
+    @Test
     void shouldMoveToTrash() throws Exception {
         Note trashNote = new Note();
         trashNote.setId(1L);

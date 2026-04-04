@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -72,6 +73,57 @@ class NoteServiceTest {
         assertTrue(trashedNote.isInTrash());
         assertFalse(trashedNote.isPinned());
         verify(repository).save(note);
+    }
+
+    @Test
+    void shouldReturnAllUniqueTagsSortedAndDeduplicated() {
+        Note note1 = new Note();
+        note1.setTitle("Note 1");
+        note1.setTags("work,important");
+        note1.setUser(testUser);
+
+        Note note2 = new Note();
+        note2.setTitle("Note 2");
+        note2.setTags("personal, work, urgent");
+        note2.setUser(testUser);
+
+        Note note3 = new Note();
+        note3.setTitle("Note 3");
+        note3.setTags("");
+        note3.setUser(testUser);
+
+        when(repository.findAllByUserAndInTrashFalse(testUser)).thenReturn(List.of(note1, note2, note3));
+
+        List<String> tags = service.getAllUniqueTags(USER_ID);
+
+        assertEquals(List.of("important", "personal", "urgent", "work"), tags);
+    }
+
+    @Test
+    void shouldSaveNoteWithTags() {
+        Note note = new Note();
+        note.setTitle("Tagged Note");
+        note.setTags("work,important");
+
+        when(repository.save(note)).thenReturn(note);
+
+        Note saved = service.save(note, USER_ID);
+
+        assertEquals("work,important", saved.getTags());
+        verify(repository).save(note);
+    }
+
+    @Test
+    void shouldDefaultNullTagsToEmptyOnSave() {
+        Note note = new Note();
+        note.setTitle("No Tags");
+        note.setTags(null);
+
+        when(repository.save(note)).thenReturn(note);
+
+        service.save(note, USER_ID);
+
+        assertEquals("", note.getTags());
     }
 
     @Test

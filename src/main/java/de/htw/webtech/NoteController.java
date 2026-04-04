@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/notes")
 public class NoteController {
@@ -41,6 +43,11 @@ public class NoteController {
     @GetMapping("/trash")
     public ResponseEntity<Iterable<Note>> getAllTrashedNotes() {
         return ResponseEntity.ok(service.getAllTrashed(getCurrentUserId()));
+    }
+
+    @GetMapping("/tags")
+    public ResponseEntity<List<String>> getAllUniqueTags() {
+        return ResponseEntity.ok(service.getAllUniqueTags(getCurrentUserId()));
     }
 
     @GetMapping("/{id}")

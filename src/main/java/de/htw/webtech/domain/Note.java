@@ -28,7 +28,7 @@ public class Note {
     private LocalDateTime lastModified;
     private boolean pinned;
     private boolean inTrash;
-    private String tags; // Comma-separated string
+    private String tags = ""; // Comma-separated string
     @Column(nullable = true)
     private String color = "";
 
@@ -41,6 +41,7 @@ public class Note {
     public Note() {
         this.pinned = false;
         this.inTrash = false;
+        this.tags = "";
     }
 
     // --- GETTERS AND SETTERS ---

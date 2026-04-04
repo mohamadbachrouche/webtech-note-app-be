@@ -126,6 +126,43 @@ class NoteRepositoryTest {
     }
 
     @Test
+    void shouldPersistTagsAcrossCreateUpdateAndFetch() {
+        Note note = new Note();
+        note.setTitle("Tags Test");
+        note.setTags("work,important");
+        note.setUser(testUser);
+
+        Note created = repository.save(note);
+        entityManager.flush();
+        entityManager.clear();
+
+        Note afterCreate = repository.findByIdAndUser(created.getId(), testUser).orElseThrow();
+        assertEquals("work,important", afterCreate.getTags());
+
+        afterCreate.setTags("personal,urgent");
+        repository.save(afterCreate);
+        entityManager.flush();
+        entityManager.clear();
+
+        Note afterUpdate = repository.findByIdAndUser(created.getId(), testUser).orElseThrow();
+        assertEquals("personal,urgent", afterUpdate.getTags());
+    }
+
+    @Test
+    void shouldDefaultTagsToEmptyString() {
+        Note note = new Note();
+        note.setTitle("No Tags Note");
+        note.setUser(testUser);
+
+        Note saved = repository.save(note);
+        entityManager.flush();
+        entityManager.clear();
+
+        Note fetched = repository.findByIdAndUser(saved.getId(), testUser).orElseThrow();
+        assertEquals("", fetched.getTags());
+    }
+
+    @Test
     void shouldPersistColorAcrossCreateUpdateAndFetch() {
         Note note = new Note();
         note.setTitle("Color Test");
