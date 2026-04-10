@@ -2,6 +2,8 @@ package de.htw.webtech.service;
 
 import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
+import de.htw.webtech.dto.NoteCreateRequest;
+import de.htw.webtech.dto.NoteUpdateRequest;
 import de.htw.webtech.exception.NoteNotFoundException;
 import de.htw.webtech.repository.NoteRepository;
 import de.htw.webtech.repository.UserRepository;
@@ -23,11 +25,15 @@ public class NoteService {
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
     }
 
-    public Note save(Note note, Long userId) {
+    public Note create(NoteCreateRequest request, Long userId) {
         AppUser user = getUser(userId);
-        if (note.getColor() == null) {
-            note.setColor("");
-        }
+        Note note = new Note();
+        note.setTitle(request.getTitle());
+        note.setContent(request.getContent());
+        note.setTags(request.getTags());
+        note.setColor(request.getColor() == null ? "" : request.getColor());
+        note.setPinned(request.isPinned());
+        note.setInTrash(false);
         note.setUser(user);
         return repository.save(note);
     }
@@ -45,16 +51,16 @@ public class NoteService {
         return repository.findAllByUserAndInTrashTrue(getUser(userId));
     }
 
-    public Note update(Long id, Note updatedNote, Long userId) {
+    public Note update(Long id, NoteUpdateRequest request, Long userId) {
         Note existingNote = repository.findByIdAndUser(id, getUser(userId))
                 .orElseThrow(() -> new NoteNotFoundException(id));
 
-        existingNote.setTitle(updatedNote.getTitle());
-        existingNote.setContent(updatedNote.getContent());
-        existingNote.setTags(updatedNote.getTags());
-        existingNote.setColor(updatedNote.getColor() == null ? "" : updatedNote.getColor());
-        existingNote.setPinned(updatedNote.isPinned());
-        existingNote.setInTrash(updatedNote.isInTrash());
+        existingNote.setTitle(request.getTitle());
+        existingNote.setContent(request.getContent());
+        existingNote.setTags(request.getTags());
+        existingNote.setColor(request.getColor() == null ? "" : request.getColor());
+        existingNote.setPinned(request.isPinned());
+        existingNote.setInTrash(request.isInTrash());
         return repository.save(existingNote);
     }
 

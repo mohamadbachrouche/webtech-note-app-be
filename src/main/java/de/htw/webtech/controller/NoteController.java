@@ -2,6 +2,9 @@ package de.htw.webtech.controller;
 
 import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
+import de.htw.webtech.dto.NoteCreateRequest;
+import de.htw.webtech.dto.NoteResponse;
+import de.htw.webtech.dto.NoteUpdateRequest;
 import de.htw.webtech.service.NoteService;
 import de.htw.webtech.service.PdfService;
 import jakarta.validation.Valid;
@@ -12,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/notes")
@@ -33,33 +39,41 @@ public class NoteController {
     @Autowired
     private PdfService pdfService;
 
+    private static List<NoteResponse> toResponseList(Iterable<Note> notes) {
+        List<NoteResponse> out = new ArrayList<>();
+        for (Note n : notes) {
+            out.add(NoteResponse.from(n));
+        }
+        return out;
+    }
+
     @GetMapping
-    public ResponseEntity<Iterable<Note>> getAllNotes() {
-        return ResponseEntity.ok(service.getAll(getCurrentUserId()));
+    public ResponseEntity<List<NoteResponse>> getAllNotes() {
+        return ResponseEntity.ok(toResponseList(service.getAll(getCurrentUserId())));
     }
 
     @GetMapping("/trash")
-    public ResponseEntity<Iterable<Note>> getAllTrashedNotes() {
-        return ResponseEntity.ok(service.getAllTrashed(getCurrentUserId()));
+    public ResponseEntity<List<NoteResponse>> getAllTrashedNotes() {
+        return ResponseEntity.ok(toResponseList(service.getAllTrashed(getCurrentUserId())));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Note> getNoteById(@PathVariable Long id) {
+    public ResponseEntity<NoteResponse> getNoteById(@PathVariable Long id) {
         Note note = service.get(id, getCurrentUserId());
-        return ResponseEntity.ok(note);
+        return ResponseEntity.ok(NoteResponse.from(note));
     }
 
     @PostMapping
-    public ResponseEntity<Note> createNote(@Valid @RequestBody Note note) {
-        Note createdNote = service.save(note, getCurrentUserId());
-        return ResponseEntity.ok(createdNote);
+    public ResponseEntity<NoteResponse> createNote(@Valid @RequestBody NoteCreateRequest request) {
+        Note createdNote = service.create(request, getCurrentUserId());
+        return ResponseEntity.ok(NoteResponse.from(createdNote));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Note> updateNote(@PathVariable Long id,
-                                           @Valid @RequestBody Note note) {
-        Note updatedNote = service.update(id, note, getCurrentUserId());
-        return ResponseEntity.ok(updatedNote);
+    public ResponseEntity<NoteResponse> updateNote(@PathVariable Long id,
+                                                   @Valid @RequestBody NoteUpdateRequest request) {
+        Note updatedNote = service.update(id, request, getCurrentUserId());
+        return ResponseEntity.ok(NoteResponse.from(updatedNote));
     }
 
     @GetMapping("/{id}/download/pdf")
@@ -78,15 +92,15 @@ public class NoteController {
 
     // Moving note to trash
     @PutMapping("/trash/{id}")
-    public ResponseEntity<Note> moveToTrash(@PathVariable Long id) {
+    public ResponseEntity<NoteResponse> moveToTrash(@PathVariable Long id) {
         Note trashedNote = service.moveToTrash(id, getCurrentUserId());
-        return ResponseEntity.ok(trashedNote);
+        return ResponseEntity.ok(NoteResponse.from(trashedNote));
     }
 
     @PutMapping("/restore/{id}")
-    public ResponseEntity<Note> restoreFromTrash(@PathVariable Long id) {
+    public ResponseEntity<NoteResponse> restoreFromTrash(@PathVariable Long id) {
         Note restoredNote = service.restoreFromTrash(id, getCurrentUserId());
-        return ResponseEntity.ok(restoredNote);
+        return ResponseEntity.ok(NoteResponse.from(restoredNote));
     }
 
     // Permanent delete
