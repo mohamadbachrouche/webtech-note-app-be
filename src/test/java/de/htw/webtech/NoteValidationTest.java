@@ -3,6 +3,7 @@ package de.htw.webtech;
 import de.htw.webtech.controller.NoteController;
 import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
+import de.htw.webtech.dto.NoteCreateRequest;
 import de.htw.webtech.security.JwtService;
 import de.htw.webtech.service.NoteService;
 import de.htw.webtech.service.PdfService;
@@ -74,7 +75,7 @@ class NoteValidationTest {
         note.setTitle("Valid Title");
         note.setContent("Valid Content");
 
-        when(service.save(any(Note.class), anyLong())).thenReturn(note);
+        when(service.create(any(NoteCreateRequest.class), anyLong())).thenReturn(note);
 
         mockMvc.perform(post("/api/notes")
                 .with(user(mockUser())).with(csrf())

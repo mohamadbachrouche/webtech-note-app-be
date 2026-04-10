@@ -2,7 +2,7 @@ package de.htw.webtech;
 
 import de.htw.webtech.controller.NoteController;
 import de.htw.webtech.domain.AppUser;
-import de.htw.webtech.domain.Note;
+import de.htw.webtech.dto.NoteUpdateRequest;
 import de.htw.webtech.exception.NoteNotFoundException;
 import de.htw.webtech.security.JwtService;
 import de.htw.webtech.service.NoteService;
@@ -66,7 +66,7 @@ class NoteErrorHandlingTest {
     void shouldReturn404WhenUpdatingNonExistentNote() throws Exception {
         Long nonExistentId = 99999L;
 
-        when(service.update(eq(nonExistentId), any(Note.class), anyLong()))
+        when(service.update(eq(nonExistentId), any(NoteUpdateRequest.class), anyLong()))
                 .thenThrow(new NoteNotFoundException(nonExistentId));
 
         mockMvc.perform(put("/api/notes/" + nonExistentId)

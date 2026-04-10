@@ -2,6 +2,7 @@ package de.htw.webtech.service;
 
 import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
+import de.htw.webtech.dto.NoteCreateRequest;
 import de.htw.webtech.repository.NoteRepository;
 import de.htw.webtech.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,17 +43,27 @@ class NoteServiceTest {
     }
 
     @Test
-    void shouldSaveNote() {
-        Note note = new Note();
-        note.setTitle("Test Note");
+    void shouldCreateNoteFromRequest() {
+        NoteCreateRequest request = new NoteCreateRequest();
+        request.setTitle("Test Note");
+        request.setContent("Body");
+        request.setTags("tag1,tag2");
+        request.setColor("#33aaff");
+        request.setPinned(true);
 
-        when(repository.save(note)).thenReturn(note);
+        when(repository.save(any(Note.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        Note savedNote = service.save(note, USER_ID);
+        Note savedNote = service.create(request, USER_ID);
 
         assertEquals("Test Note", savedNote.getTitle());
+        assertEquals("Body", savedNote.getContent());
+        assertEquals("tag1,tag2", savedNote.getTags());
+        assertEquals("#33aaff", savedNote.getColor());
+        assertTrue(savedNote.isPinned());
+        assertFalse(savedNote.isInTrash());
         assertEquals(testUser, savedNote.getUser());
-        verify(repository).save(note);
+        verify(repository).save(any(Note.class));
     }
 
     @Test

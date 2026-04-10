@@ -3,6 +3,8 @@ package de.htw.webtech;
 import de.htw.webtech.controller.NoteController;
 import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
+import de.htw.webtech.dto.NoteCreateRequest;
+import de.htw.webtech.dto.NoteUpdateRequest;
 import de.htw.webtech.security.JwtService;
 import de.htw.webtech.service.NoteService;
 import de.htw.webtech.service.PdfService;
@@ -93,7 +95,7 @@ class NoteControllerTest {
         note.setTitle("New Note");
         note.setColor("#55cc55");
 
-        when(service.save(any(Note.class), anyLong())).thenReturn(note);
+        when(service.create(any(NoteCreateRequest.class), anyLong())).thenReturn(note);
 
         mockMvc.perform(post("/api/notes")
                         .with(user(mockUser())).with(csrf())
@@ -111,7 +113,7 @@ class NoteControllerTest {
         updatedNote.setTitle("Updated Title");
         updatedNote.setColor("#ff5544");
 
-        when(service.update(eq(1L), any(Note.class), anyLong())).thenReturn(updatedNote);
+        when(service.update(eq(1L), any(NoteUpdateRequest.class), anyLong())).thenReturn(updatedNote);
 
         mockMvc.perform(put("/api/notes/1")
                         .with(user(mockUser())).with(csrf())
