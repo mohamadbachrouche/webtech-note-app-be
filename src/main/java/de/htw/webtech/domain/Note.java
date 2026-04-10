@@ -8,6 +8,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(
+    name = "note",
+    indexes = {
+        // All list queries filter by (user_id, in_trash) — see NoteRepository.
+        @Index(name = "idx_note_user_in_trash", columnList = "user_id, in_trash")
+    }
+)
 public class Note {
 
     @Id
@@ -15,6 +22,7 @@ public class Note {
     private Long id;
 
     @NotBlank(message = "Title is required and cannot be blank")
+    @Column(nullable = false, length = 200)
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -28,8 +36,12 @@ public class Note {
     private LocalDateTime lastModified;
     private boolean pinned;
     private boolean inTrash;
+
+    @Column(length = 500)
     private String tags; // Comma-separated string
-    @Column(nullable = true)
+
+    // Empty string or #RRGGBB (7 chars). Request DTOs enforce the pattern.
+    @Column(length = 7)
     private String color = "";
 
     @JsonIgnore
@@ -111,7 +123,7 @@ public class Note {
     }
 
     public String getColor() {
-        return color == null ? "" : color;
+        return color;
     }
 
     public void setColor(String color) {

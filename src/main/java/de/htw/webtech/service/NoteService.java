@@ -33,7 +33,7 @@ public class NoteService {
         note.setTitle(request.getTitle());
         note.setContent(request.getContent());
         note.setTags(request.getTags());
-        note.setColor(request.getColor() == null ? "" : request.getColor());
+        note.setColor(request.getColor());
         note.setPinned(request.isPinned());
         note.setInTrash(false);
         note.setUser(user);
@@ -63,7 +63,7 @@ public class NoteService {
         existingNote.setTitle(request.getTitle());
         existingNote.setContent(request.getContent());
         existingNote.setTags(request.getTags());
-        existingNote.setColor(request.getColor() == null ? "" : request.getColor());
+        existingNote.setColor(request.getColor());
         existingNote.setPinned(request.isPinned());
         existingNote.setInTrash(request.isInTrash());
         return repository.save(existingNote);
