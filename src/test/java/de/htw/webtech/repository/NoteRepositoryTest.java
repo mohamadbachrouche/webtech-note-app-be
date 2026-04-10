@@ -51,7 +51,7 @@ class NoteRepositoryTest {
         repository.save(trashNote);
 
         // 2. Act: Call the user-scoped query
-        Iterable<Note> result = repository.findAllByUserAndInTrashFalse(testUser);
+        Iterable<Note> result = repository.findAllByUserIdAndInTrashFalse(testUser.getId());
 
         // 3. Assert: We should only find the 1 active note
         List<Note> notes = (List<Note>) result;
@@ -118,7 +118,7 @@ class NoteRepositoryTest {
         repository.save(trashNote);
 
         // 2. Act
-        Iterable<Note> result = repository.findAllByUserAndInTrashTrue(testUser);
+        Iterable<Note> result = repository.findAllByUserIdAndInTrashTrue(testUser.getId());
 
         // 3. Assert: We should only find the 1 trashed note
         List<Note> notes = (List<Note>) result;
@@ -136,7 +136,7 @@ class NoteRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        Note afterCreate = repository.findByIdAndUser(created.getId(), testUser).orElseThrow();
+        Note afterCreate = repository.findByIdAndUserId(created.getId(), testUser.getId()).orElseThrow();
         assertEquals("#22cc88", afterCreate.getColor());
 
         afterCreate.setColor("#ff9900");
@@ -144,7 +144,7 @@ class NoteRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        Note afterUpdate = repository.findByIdAndUser(created.getId(), testUser).orElseThrow();
+        Note afterUpdate = repository.findByIdAndUserId(created.getId(), testUser.getId()).orElseThrow();
         assertEquals("#ff9900", afterUpdate.getColor());
     }
 }

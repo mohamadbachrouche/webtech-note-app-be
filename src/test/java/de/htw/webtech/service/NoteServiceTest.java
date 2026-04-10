@@ -38,12 +38,12 @@ class NoteServiceTest {
         testUser.setId(USER_ID);
         testUser.setEmail("test@test.com");
         testUser.setPassword("hashed");
-
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
     }
 
     @Test
     void shouldCreateNoteFromRequest() {
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
+
         NoteCreateRequest request = new NoteCreateRequest();
         request.setTitle("Test Note");
         request.setContent("Body");
@@ -75,7 +75,7 @@ class NoteServiceTest {
         note.setPinned(true);
         note.setInTrash(false);
 
-        when(repository.findByIdAndUser(id, testUser)).thenReturn(Optional.of(note));
+        when(repository.findByIdAndUserId(id, USER_ID)).thenReturn(Optional.of(note));
         when(repository.save(any(Note.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Note trashedNote = service.moveToTrash(id, USER_ID);
@@ -93,7 +93,7 @@ class NoteServiceTest {
         note.setUser(testUser);
         note.setInTrash(true);
 
-        when(repository.findByIdAndUser(id, testUser)).thenReturn(Optional.of(note));
+        when(repository.findByIdAndUserId(id, USER_ID)).thenReturn(Optional.of(note));
         when(repository.save(any(Note.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Note restoredNote = service.restoreFromTrash(id, USER_ID);

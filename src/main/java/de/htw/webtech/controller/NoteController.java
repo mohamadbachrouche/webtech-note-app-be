@@ -8,7 +8,6 @@ import de.htw.webtech.dto.NoteUpdateRequest;
 import de.htw.webtech.service.NoteService;
 import de.htw.webtech.service.PdfService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +23,11 @@ import java.util.List;
 public class NoteController {
 
     private final NoteService service;
+    private final PdfService pdfService;
 
-    public NoteController(NoteService service) {
+    public NoteController(NoteService service, PdfService pdfService) {
         this.service = service;
+        this.pdfService = pdfService;
     }
 
     // Extracts the ID of the currently authenticated user from the JWT-backed SecurityContext
@@ -35,9 +36,6 @@ public class NoteController {
         AppUser user = (AppUser) auth.getPrincipal();
         return user.getId();
     }
-
-    @Autowired
-    private PdfService pdfService;
 
     private static List<NoteResponse> toResponseList(Iterable<Note> notes) {
         List<NoteResponse> out = new ArrayList<>();

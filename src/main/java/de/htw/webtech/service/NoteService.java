@@ -7,12 +7,16 @@ import de.htw.webtech.dto.NoteUpdateRequest;
 import de.htw.webtech.exception.NoteNotFoundException;
 import de.htw.webtech.repository.NoteRepository;
 import de.htw.webtech.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class NoteService {
+
+    private static final Logger log = LoggerFactory.getLogger(NoteService.class);
 
     private final NoteRepository repository;
     private final UserRepository userRepository;
@@ -22,13 +26,9 @@ public class NoteService {
         this.userRepository = userRepository;
     }
 
-    private AppUser getUser(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
-    }
-
     public Note create(NoteCreateRequest request, Long userId) {
-        AppUser user = getUser(userId);
+        AppUser user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
         Note note = new Note();
         note.setTitle(request.getTitle());
         note.setContent(request.getContent());
@@ -37,27 +37,29 @@ public class NoteService {
         note.setPinned(request.isPinned());
         note.setInTrash(false);
         note.setUser(user);
-        return repository.save(note);
+        Note saved = repository.save(note);
+        log.info("note.create id={} userId={}", saved.getId(), userId);
+        return saved;
     }
 
     @Transactional(readOnly = true)
     public Note get(Long id, Long userId) {
-        return repository.findByIdAndUser(id, getUser(userId))
+        return repository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new NoteNotFoundException(id));
     }
 
     @Transactional(readOnly = true)
     public Iterable<Note> getAll(Long userId) {
-        return repository.findAllByUserAndInTrashFalse(getUser(userId));
+        return repository.findAllByUserIdAndInTrashFalse(userId);
     }
 
     @Transactional(readOnly = true)
     public Iterable<Note> getAllTrashed(Long userId) {
-        return repository.findAllByUserAndInTrashTrue(getUser(userId));
+        return repository.findAllByUserIdAndInTrashTrue(userId);
     }
 
     public Note update(Long id, NoteUpdateRequest request, Long userId) {
-        Note existingNote = repository.findByIdAndUser(id, getUser(userId))
+        Note existingNote = repository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new NoteNotFoundException(id));
 
         existingNote.setTitle(request.getTitle());
@@ -66,29 +68,36 @@ public class NoteService {
         existingNote.setColor(request.getColor());
         existingNote.setPinned(request.isPinned());
         existingNote.setInTrash(request.isInTrash());
-        return repository.save(existingNote);
+        Note saved = repository.save(existingNote);
+        log.info("note.update id={} userId={}", id, userId);
+        return saved;
     }
 
     public Note moveToTrash(Long id, Long userId) {
-        Note note = repository.findByIdAndUser(id, getUser(userId))
+        Note note = repository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new NoteNotFoundException(id));
 
         note.setInTrash(true);
         note.setPinned(false); // Can't be pinned and in trash
-        return repository.save(note);
+        Note saved = repository.save(note);
+        log.info("note.moveToTrash id={} userId={}", id, userId);
+        return saved;
     }
 
     public Note restoreFromTrash(Long id, Long userId) {
-        Note note = repository.findByIdAndUser(id, getUser(userId))
+        Note note = repository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new NoteNotFoundException(id));
 
         note.setInTrash(false);
-        return repository.save(note);
+        Note saved = repository.save(note);
+        log.info("note.restoreFromTrash id={} userId={}", id, userId);
+        return saved;
     }
 
     public void deletePermanently(Long id, Long userId) {
-        Note note = repository.findByIdAndUser(id, getUser(userId))
+        Note note = repository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new NoteNotFoundException(id));
         repository.delete(note);
+        log.info("note.deletePermanently id={} userId={}", id, userId);
     }
 }
