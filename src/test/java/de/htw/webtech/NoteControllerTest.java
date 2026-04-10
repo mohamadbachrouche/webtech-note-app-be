@@ -2,6 +2,7 @@ package de.htw.webtech;
 
 import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
+import de.htw.webtech.repository.UserRepository;
 import de.htw.webtech.security.JwtService;
 import de.htw.webtech.service.NoteService;
 import de.htw.webtech.service.PdfService;
@@ -41,6 +42,12 @@ class NoteControllerTest {
     // Required by JwtAuthenticationFilter (loaded as a Filter bean in WebMvcTest)
     @MockitoBean
     private JwtService jwtService;
+
+    // JwtAuthenticationFilter also depends on UserRepository to resolve the
+    // principal from the token subject; mocked here so the test slice can
+    // wire it up.
+    @MockitoBean
+    private UserRepository userRepository;
 
     // Required by SecurityConfig's DaoAuthenticationProvider
     @MockitoBean

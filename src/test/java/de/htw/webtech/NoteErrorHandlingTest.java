@@ -3,6 +3,7 @@ package de.htw.webtech;
 import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
 import de.htw.webtech.exception.NoteNotFoundException;
+import de.htw.webtech.repository.UserRepository;
 import de.htw.webtech.security.JwtService;
 import de.htw.webtech.service.NoteService;
 import de.htw.webtech.service.PdfService;
@@ -36,6 +37,9 @@ class NoteErrorHandlingTest {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @MockitoBean
     private UserDetailsService userDetailsService;

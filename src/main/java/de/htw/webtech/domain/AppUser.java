@@ -1,5 +1,6 @@
 package de.htw.webtech.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -25,6 +26,7 @@ public class AppUser implements UserDetails {
     private String email;
 
     @NotBlank
+    @JsonIgnore // never serialise the password hash out of the API
     @Column(nullable = false)
     private String password; // BCrypt hash — never plain text
 
@@ -38,16 +40,18 @@ public class AppUser implements UserDetails {
 
     // --- UserDetails contract ---
 
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
+    @JsonIgnore
     @Override public String getPassword()  { return password; }
     @Override public String getUsername()  { return email; } // email is the login identifier
 
-    @Override public boolean isAccountNonExpired()    { return true; }
-    @Override public boolean isAccountNonLocked()     { return true; }
-    @Override public boolean isCredentialsNonExpired(){ return true; }
-    @Override public boolean isEnabled()              { return true; }
+    @JsonIgnore @Override public boolean isAccountNonExpired()    { return true; }
+    @JsonIgnore @Override public boolean isAccountNonLocked()     { return true; }
+    @JsonIgnore @Override public boolean isCredentialsNonExpired(){ return true; }
+    @JsonIgnore @Override public boolean isEnabled()              { return true; }
 }

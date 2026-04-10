@@ -2,6 +2,7 @@ package de.htw.webtech.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -58,6 +59,22 @@ public class GlobalExceptionHandler {
                 "Invalid email or password",
                 LocalDateTime.now());
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * Thrown by {@link de.htw.webtech.service.NoteService} when an
+     * authenticated user tries to read or mutate a note owned by someone
+     * else. Per spec, this is 403 Forbidden — not 404 and not 401 — so
+     * the client can distinguish "the resource exists but isn't yours"
+     * from "no such resource".
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                "Access denied",
+                LocalDateTime.now());
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)
