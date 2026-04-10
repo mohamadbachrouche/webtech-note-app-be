@@ -1,5 +1,6 @@
 package de.htw.webtech;
 
+import de.htw.webtech.controller.NoteController;
 import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;
 import de.htw.webtech.security.JwtService;

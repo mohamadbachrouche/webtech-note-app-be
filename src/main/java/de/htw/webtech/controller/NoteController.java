@@ -1,4 +1,4 @@
-package de.htw.webtech;
+package de.htw.webtech.controller;
 
 import de.htw.webtech.domain.AppUser;
 import de.htw.webtech.domain.Note;

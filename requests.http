@@ -1,5 +1,28 @@
-### 1. (M4 Requirement) Create a new note (POST)
-POST http://localhost:8080/api/notes
+### Variables
+@host = http://localhost:8080
+@token = PASTE_JWT_TOKEN_HERE
+
+### 1. Register a new user
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "demo@example.com",
+  "password": "supersecret123"
+}
+
+### 2. Login (copy the returned `token` into the @token variable above)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "demo@example.com",
+  "password": "supersecret123"
+}
+
+### 3. (M4 Requirement) Create a new note (POST)
+POST {{host}}/api/notes
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -7,22 +30,29 @@ Content-Type: application/json
   "content": "This is the content for my test note.",
   "tags": "test, java",
   "pinned": false,
-  "inTrash": false
+  "inTrash": false,
+  "color": "#33aaff"
 }
 
-### 2. Get all notes (GET)
-GET http://localhost:8080/api/notes
+### 4. Get all active notes (GET)
+GET {{host}}/api/notes
+Authorization: Bearer {{token}}
 Accept: application/json
 
-### 3. Get a single note (GET by ID)
+### 5. Get all trashed notes (GET)
+GET {{host}}/api/notes/trash
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### 6. Get a single note (GET by ID)
 # Note: You must run the POST request first to get an ID.
-# Change the '1' to match the ID you get back.
-GET http://localhost:8080/api/notes/1
+GET {{host}}/api/notes/1
+Authorization: Bearer {{token}}
 Accept: application/json
 
-### 4. Update a note (PUT)
-# Note: Change the '1' to match the ID you want to update.
-PUT http://localhost:8080/api/notes/1
+### 7. Update a note (PUT)
+PUT {{host}}/api/notes/1
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -30,10 +60,23 @@ Content-Type: application/json
   "content": "The content has been updated.",
   "tags": "test, updated",
   "pinned": true,
-  "inTrash": false
+  "inTrash": false,
+  "color": "#55cc55"
 }
 
-### 5. Delete a note (DELETE)
-# Note: Change the '1' to match the ID you want to delete.
-DELETE http://localhost:8080/api/notes/1
-Accept: application/json
+### 8. Move a note to trash
+PUT {{host}}/api/notes/trash/1
+Authorization: Bearer {{token}}
+
+### 9. Restore a note from trash
+PUT {{host}}/api/notes/restore/1
+Authorization: Bearer {{token}}
+
+### 10. Permanently delete a note
+DELETE {{host}}/api/notes/permanent/1
+Authorization: Bearer {{token}}
+
+### 11. Download a note as PDF
+GET {{host}}/api/notes/1/download/pdf
+Authorization: Bearer {{token}}
+Accept: application/pdf

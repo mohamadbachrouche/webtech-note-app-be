@@ -1,4 +1,4 @@
-package de.htw.webtech;
+package de.htw.webtech.controller;
 
 import de.htw.webtech.dto.AuthResponse;
 import de.htw.webtech.dto.LoginRequest;
