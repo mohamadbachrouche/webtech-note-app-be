@@ -8,8 +8,10 @@ import de.htw.webtech.exception.NoteNotFoundException;
 import de.htw.webtech.repository.NoteRepository;
 import de.htw.webtech.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class NoteService {
 
     private final NoteRepository repository;
@@ -38,15 +40,18 @@ public class NoteService {
         return repository.save(note);
     }
 
+    @Transactional(readOnly = true)
     public Note get(Long id, Long userId) {
         return repository.findByIdAndUser(id, getUser(userId))
                 .orElseThrow(() -> new NoteNotFoundException(id));
     }
 
+    @Transactional(readOnly = true)
     public Iterable<Note> getAll(Long userId) {
         return repository.findAllByUserAndInTrashFalse(getUser(userId));
     }
 
+    @Transactional(readOnly = true)
     public Iterable<Note> getAllTrashed(Long userId) {
         return repository.findAllByUserAndInTrashTrue(getUser(userId));
     }
